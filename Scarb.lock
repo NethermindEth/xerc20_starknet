@@ -25,6 +25,11 @@ version = "0.18.0"
 source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
 
 [[package]]
+name = "openzeppelin_security"
+version = "0.18.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
+
+[[package]]
 name = "openzeppelin_token"
 version = "0.18.0"
 source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
@@ -33,6 +38,11 @@ dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
 ]
+
+[[package]]
+name = "openzeppelin_upgrades"
+version = "0.18.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
 
 [[package]]
 name = "openzeppelin_utils"
@@ -57,6 +67,9 @@ name = "xerc20_starknet"
 version = "0.1.0"
 dependencies = [
  "openzeppelin_access",
+ "openzeppelin_security",
  "openzeppelin_token",
+ "openzeppelin_upgrades",
+ "openzeppelin_utils",
  "snforge_std",
 ]

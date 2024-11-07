@@ -1,5 +1,6 @@
 use starknet::ContractAddress;
 
+// TODO: Ensure interface matches with whats in the hyperlane repo.
 #[starknet::interface]
 pub trait IXERC20<TState> {
     fn set_lockbox(ref self: TState, lockbox: ContractAddress);
