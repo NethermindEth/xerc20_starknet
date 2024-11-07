@@ -1,19 +1,25 @@
-//! Solidity version uses CREATE3
-//! Need EnumerableSet impl
 #[starknet::contract]
 mod XERC20Factory {
-    #[allow(unused_imports)]
+    use core::num::traits::Zero;
+    use starknet::ClassHash;
+    use starknet::ContractAddress;
+    use starknet::SyscallResultTrait;
     use starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, Map, StoragePathEntry
     };
-    #[allow(unused_imports)]
     use xerc20_starknet::interfaces::ixerc20_factory::IXERC20Factory;
-    use core::num::traits::Zero;
-    use starknet::ContractAddress;
+    use xerc20_starknet::utils::create3_proxy::{
+        ICreate3ProxyDispatcher, ICreate3ProxyDispatcherTrait
+    };
 
     #[storage]
     struct Storage {
+        xerc20_class_hash: starknet::ClassHash,
+        lockbox_class_hash: starknet::ClassHash,
+        create3_proxy_class_hash: starknet::ClassHash,
         lockbox_registry: Map<ContractAddress, ContractAddress>,
+        /// NOTE: solidity version only uses add method of enumerable set and they are 'internal'
+        /// so if this supposed be top-level contract no need to implement enumerable set.
         lockbox_registry_array: Map<ContractAddress, bool>, /// TODO: Need EnumerableSet.AddressSet
         xerc20_registry_array: Map<ContractAddress, bool> /// TODO: Need EnumerableSet.AddressSet
     }
@@ -40,6 +46,14 @@ mod XERC20Factory {
         pub const BAD_TOKEN_ADDRESS: felt252 = 'Bad token address';
         pub const LOCKBOX_ALREADY_DEPLOYED: felt252 = 'Lockbox alread deployed';
         pub const INVALID_LENGTH: felt252 = 'Invalid length';
+    }
+
+    #[constructor]
+    fn constructor(
+        ref self: ContractState, xerc20_class_hash: ClassHash, lockbox_class_hash: ClassHash
+    ) {
+        self.xerc20_class_hash.write(xerc20_class_hash);
+        self.lockbox_class_hash.write(lockbox_class_hash);
     }
 
     #[abi(embed_v0)]
@@ -81,7 +95,30 @@ mod XERC20Factory {
             burner_limits: Span<u256>,
             bridges: Span<ContractAddress>
         ) -> ContractAddress {
-            Zero::zero()
+            assert(
+                minter_limits.len() == bridges.len() && bridges.len() == burner_limits.len(),
+                Errors::INVALID_LENGTH
+            );
+            let mut serialized_data: Array<felt252> = array![];
+            name.serialize(ref serialized_data);
+            symbol.serialize(ref serialized_data);
+
+            /// deploy with create 3 here but we only benefit from future cairo vms to be able to
+            /// deploy to same address.
+            /// There is no address compoatibility between Cairo Vm and EVM.
+            starknet::get_caller_address().serialize(ref serialized_data);
+            let salt = core::poseidon::poseidon_hash_span(serialized_data.span());
+            let serialized_ctor_data: Array<felt252> = array![];
+            let deployed_address = self
+                .create_without_init_code_factor(
+                    self.xerc20_class_hash.read(),
+                    salt,
+                    Option::Some(selector!("initialize")),
+                    Option::Some(serialized_ctor_data.span())
+                );
+            let registry_storage_path = self.xerc20_registry_array.entry(deployed_address);
+            registry_storage_path.write(true);
+            deployed_address
         }
 
         fn _deploy_lockbox(
@@ -91,6 +128,23 @@ mod XERC20Factory {
             is_native: bool
         ) -> ContractAddress {
             Zero::zero()
+        }
+
+        fn create_without_init_code_factor(
+            ref self: ContractState,
+            class_hash: ClassHash,
+            salt: felt252,
+            selector: Option<felt252>,
+            calldata: Option<Span<felt252>>
+        ) -> ContractAddress {
+            let (deployed_address, _) = starknet::syscalls::deploy_syscall(
+                self.create3_proxy_class_hash.read(), salt, [].span(), false
+            )
+                .unwrap_syscall();
+            // call contract to upgrade itself to desired implementation and initialize the code.
+            ICreate3ProxyDispatcher { contract_address: deployed_address }
+                .initialize(class_hash, selector, calldata);
+            deployed_address
         }
     }
 }

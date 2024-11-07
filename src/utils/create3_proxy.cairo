@@ -10,8 +10,8 @@ pub trait ICreate3Proxy<TContractState> {
 
 //! This contract can be utilized for deterministic deployments without `class_hash` and
 //! 'ctor_calldata_hash'.
-//! Deploy this contract from factory and upgrade it to 'class_hash' you desire then call the initializer of
-//! the other contract if is there any.
+//! Deploy this contract from factory and upgrade it to 'class_hash' you desire then call the
+//! initializer of the other contract if is there any.
 #[starknet::contract]
 mod Create3Proxy {
     use openzeppelin_upgrades::upgradeable::UpgradeableComponent;
