@@ -1,15 +1,15 @@
 use starknet::ContractAddress;
 
 #[starknet::interface]
-trait XERC20Initializer<TContractState> {
+pub trait XERC20Initializer<TContractState> {
     fn initialize(
         ref self: TContractState, name: ByteArray, symbol: ByteArray, factory: ContractAddress
     );
 }
 
 #[starknet::contract]
-mod XERC20 {
-    use crate::interfaces::ixerc20::IXERC20;
+pub mod XERC20 {
+    use crate::interfaces::ixerc20::{IXERC20, BridgeSerde, BridgeParametersSerde};
     use openzeppelin_access::ownable::ownable::OwnableComponent;
     use openzeppelin_security::initializable::InitializableComponent;
     use openzeppelin_token::erc20::{erc20::{ERC20Component, ERC20HooksEmptyImpl}};
@@ -69,7 +69,7 @@ mod XERC20 {
 
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         LockboxSet: LockboxSet,
         BridgeLimitsSet: BridgeLimitsSet,
         #[flat]
@@ -83,12 +83,12 @@ mod XERC20 {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct LockboxSet {
+    pub struct LockboxSet {
         pub lockbox: ContractAddress,
     }
 
     #[derive(Drop, starknet::Event)]
-    struct BridgeLimitsSet {
+    pub struct BridgeLimitsSet {
         pub minting_limit: u256,
         pub burning_limit: u256,
         #[key]
@@ -209,6 +209,34 @@ mod XERC20 {
                 burner_params_storage_path.timestamp.read(),
                 burner_params_storage_path.rate_per_second.read()
             )
+        }
+
+        fn lockbox(self: @ContractState) -> ContractAddress {
+            self.lockbox.read()
+        }
+
+        fn factory(self: @ContractState) -> ContractAddress {
+            self.factory.read()
+        }
+
+        fn get_bridge_params(self: @ContractState, bridge: ContractAddress) -> BridgeSerde {
+            let bridge_storage_path = self.bridges.entry(bridge).deref();
+            let minter_params = bridge_storage_path.minter_params.deref();
+            let burner_params = bridge_storage_path.burner_params.deref();
+            BridgeSerde {
+                minter_params: BridgeParametersSerde {
+                    timestamp: minter_params.timestamp.read(),
+                    rate_per_second: minter_params.rate_per_second.read(),
+                    max_limit: minter_params.max_limit.read(),
+                    current_limit: minter_params.current_limit.read()
+                },
+                burner_params: BridgeParametersSerde {
+                    timestamp: burner_params.timestamp.read(),
+                    rate_per_second: burner_params.rate_per_second.read(),
+                    max_limit: burner_params.max_limit.read(),
+                    current_limit: burner_params.current_limit.read()
+                }
+            }
         }
     }
 
