@@ -1,13 +1,13 @@
 use starknet::ContractAddress;
 
 #[starknet::interface]
-trait XERC20LockboxInitializer<TContractState> {
+pub trait XERC20LockboxInitializer<TContractState> {
     fn initialize(ref self: TContractState, xerc20: ContractAddress, erc20: ContractAddress);
 }
 
 //! Logics re-Native might be removed
 #[starknet::contract]
-mod XERC20Lockbox {
+pub mod XERC20Lockbox {
     use openzeppelin_security::initializable::InitializableComponent;
     use openzeppelin_token::erc20::interface::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
     use starknet::ContractAddress;
@@ -33,7 +33,7 @@ mod XERC20Lockbox {
 
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         Deposit: Deposit,
         Withdraw: Withdraw,
         #[flat]
@@ -41,15 +41,15 @@ mod XERC20Lockbox {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct Deposit {
-        sender: ContractAddress,
-        amount: u256
+    pub struct Deposit {
+        pub sender: ContractAddress,
+        pub amount: u256
     }
 
     #[derive(Drop, starknet::Event)]
-    struct Withdraw {
-        sender: ContractAddress,
-        amount: u256
+    pub struct Withdraw {
+        pub sender: ContractAddress,
+        pub amount: u256
     }
 
     pub mod Errors {
