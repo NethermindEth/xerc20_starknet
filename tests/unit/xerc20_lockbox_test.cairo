@@ -1,8 +1,6 @@
 use snforge_std::{declare, DeclareResultTrait, ContractClassTrait};
 use starknet::ContractAddress;
-use xerc20_starknet::interfaces::{
-    ixerc20::IXERC20Dispatcher, ixerc20_lockbox::IXERC20LockboxDispatcher,
-};
+use xerc20_starknet::interfaces::ixerc20_lockbox::IXERC20LockboxDispatcher;
 
 #[derive(Drop)]
 pub struct Setup {

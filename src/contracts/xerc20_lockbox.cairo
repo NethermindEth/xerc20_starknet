@@ -96,6 +96,14 @@ pub mod XERC20Lockbox {
         fn withdraw_to(ref self: ContractState, user: ContractAddress, amount: u256) {
             self._withdraw(user, amount);
         }
+
+        fn xerc20(self: @ContractState) -> ContractAddress {
+            self.xerc20.read().contract_address
+        }
+
+        fn erc20(self: @ContractState) -> ContractAddress {
+            self.erc20.read().contract_address
+        }
     }
 
     #[generate_trait]
