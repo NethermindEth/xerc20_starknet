@@ -199,7 +199,7 @@ pub mod unit_create_params {
     };
     use starknet::ContractAddress;
     use super::setup;
-    use xerc20_starknet::contracts::xerc20::XERC20;
+    use xerc20_starknet::contracts::xerc20_component::XERC20Component as XERC20;
     use xerc20_starknet::interfaces::ixerc20::IXERC20DispatcherTrait;
 
     #[test]

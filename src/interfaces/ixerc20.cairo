@@ -1,19 +1,5 @@
 use starknet::ContractAddress;
 
-#[derive(Drop, Copy, Serde)]
-pub struct BridgeSerde {
-    pub minter_params: BridgeParametersSerde,
-    pub burner_params: BridgeParametersSerde
-}
-
-#[derive(Drop, Copy, Serde)]
-pub struct BridgeParametersSerde {
-    pub timestamp: u64,
-    pub rate_per_second: u256,
-    pub max_limit: u256,
-    pub current_limit: u256
-}
-
 // TODO: Ensure interface matches with whats in the hyperlane repo.
 #[starknet::interface]
 pub trait IXERC20<TState> {
@@ -30,5 +16,4 @@ pub trait IXERC20<TState> {
     /// getters
     fn lockbox(self: @TState) -> ContractAddress;
     fn factory(self: @TState) -> ContractAddress;
-    fn get_bridge_params(self: @TState, bridge: ContractAddress) -> BridgeSerde;
 }

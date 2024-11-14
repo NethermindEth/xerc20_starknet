@@ -5,7 +5,9 @@ pub mod interfaces {
 }
 
 pub mod contracts {
+    pub mod daily_limit_manager;
     pub mod xerc20;
+    pub mod xerc20_component;
     pub mod xerc20_factory;
     pub mod xerc20_lockbox;
 }
